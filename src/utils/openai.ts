@@ -18,11 +18,13 @@ const INSIGHT_SYSTEM_PROMPT =
   'You are a behavioral spending analyst inside a minimalist budgeting app called Budglet. ' +
   'Your job is to surface a pattern or observation about the user\'s spending behavior — comparing today to their history (averages, streaks, weekday patterns, biggest items). ' +
   'Reply with exactly one short, direct sentence. No emojis. No generic advice. Be specific with the numbers provided. ' +
+  'If the user\'s name is provided, address them by name naturally at the start of the sentence. ' +
   'IMPORTANT: Do NOT mention budget remaining, daily limits, or whether they will hit their budget — a separate "Reality Check" card handles that.'
 
 const REALITY_CHECK_SYSTEM_PROMPT =
   'You are an expert financial coach inside a minimalist budgeting app called Budglet. ' +
   'Be direct, numbers-specific, and actionable — like a coach who respects the user\'s intelligence. No emojis. No generic platitudes. ' +
+  'If the user\'s name is provided, address them by name in the status sentence. ' +
   'Always respond with a valid JSON object in this exact shape: {"status":"<one blunt sentence about the current situation>","tip":"<one concrete, specific action the user can take right now to recover or stay on track>"}'
 
 async function callGpt(
@@ -80,10 +82,11 @@ export interface InsightContext {
   dailyBudget: number
   currency: string
   language: Language
+  name: string
 }
 
 export function buildInsightPrompt(ctx: InsightContext): string {
-  const { expenses, dailyBudget, currency, language } = ctx
+  const { expenses, dailyBudget, currency, language, name } = ctx
   const now = new Date()
 
   const todayTotal = getDailyTotal(expenses, now)
@@ -93,6 +96,7 @@ export function buildInsightPrompt(ctx: InsightContext): string {
   const todayExpenses = getExpensesForDay(expenses, now)
 
   const lines: string[] = [
+    name ? `User's name: ${name}` : '',
     `Date: ${format(now, 'EEEE, MMMM d')}`,
     `Daily budget: ${formatCurrency(dailyBudget, currency)}`,
     `Today's total so far: ${formatCurrency(todayTotal, currency)}`,
@@ -119,10 +123,11 @@ export interface RealityCheckContext {
   dailyBudget: number
   currency: string
   language: Language
+  name: string
 }
 
 export function buildRealityCheckPrompt(ctx: RealityCheckContext): string {
-  const { expenses, dailyBudget, currency, language } = ctx
+  const { expenses, dailyBudget, currency, language, name } = ctx
   const now = new Date()
 
   const todayTotal = getDailyTotal(expenses, now)
@@ -135,6 +140,7 @@ export function buildRealityCheckPrompt(ctx: RealityCheckContext): string {
   const overDaily = dailyBudget > 0 && todayTotal > dailyBudget
 
   const lines: string[] = [
+    name ? `User's name: ${name}` : '',
     `Time: ${format(now, 'h:mm a')}`,
     `Daily budget: ${formatCurrency(dailyBudget, currency)}`,
     `Today's total: ${formatCurrency(todayTotal, currency)}${overDaily ? ` (${formatCurrency(todayTotal - dailyBudget, currency)} over budget)` : ''}`,

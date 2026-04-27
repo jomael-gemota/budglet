@@ -8,6 +8,7 @@ import { InsightCard } from './components/InsightCard'
 import { RealityCheck } from './components/RealityCheck'
 import { SettingsSheet } from './components/SettingsSheet'
 import { HistorySheet } from './components/HistorySheet'
+import { OnboardingOverlay } from './components/OnboardingOverlay'
 import {
   getDailyTotal,
   getMonthlyTotal,
@@ -54,6 +55,7 @@ export default function App() {
       dailyBudget: settings.dailyBudget,
       currency: settings.currency,
       language: settings.language,
+      name: settings.name,
     }
 
     if (settings.apiKey && settings.aiEnabled) {
@@ -69,7 +71,7 @@ export default function App() {
           .then((text) => setDailyInsight({ text, generatedOn: key }))
           .catch(() =>
             setDailyInsight({
-              text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language),
+              text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language, settings.name),
               generatedOn: key,
             })
           )
@@ -78,7 +80,7 @@ export default function App() {
     } else {
       // Rule-based: always live, no API cost
       setDailyInsight({
-        text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language),
+        text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language, settings.name),
         generatedOn: key,
       })
     }
@@ -105,6 +107,7 @@ export default function App() {
       dailyBudget: settings.dailyBudget,
       currency: settings.currency,
       language: settings.language,
+      name: settings.name,
     }
 
     if (settings.apiKey && settings.aiEnabled) {
@@ -114,7 +117,7 @@ export default function App() {
           .then((result) => setRealityCheck(result))
           .catch(() =>
             setRealityCheck(
-              generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language)
+              generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language, settings.name)
             )
           )
           .finally(() => setRealityCheckLoading(false))
@@ -122,7 +125,7 @@ export default function App() {
     } else {
       setRealityCheckLoading(false)
       setRealityCheck(
-        generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language)
+        generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language, settings.name)
       )
     }
 
@@ -133,11 +136,11 @@ export default function App() {
 
   const insightText =
     dailyInsight?.text ??
-    generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language)
+    generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language, settings.name)
 
   const realityResult =
     realityCheck ??
-    generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language)
+    generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language, settings.name)
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
@@ -145,7 +148,12 @@ export default function App() {
       <header className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-surface-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-accent font-bold text-lg font-mono">B</span>
-          <span className="text-white font-semibold text-base tracking-tight">budglet</span>
+          <div className="flex flex-col leading-tight">
+            <span className="text-white font-semibold text-base tracking-tight">budglet</span>
+            {settings.name && (
+              <span className="text-zinc-500 text-xs">Hey, {settings.name}</span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-zinc-600 text-xs font-mono mr-1">
@@ -234,6 +242,9 @@ export default function App() {
 
       {/* History sheet */}
       <HistorySheet />
+
+      {/* First-run onboarding */}
+      <OnboardingOverlay />
     </div>
   )
 }

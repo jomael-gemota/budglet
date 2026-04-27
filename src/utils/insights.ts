@@ -13,11 +13,19 @@ import {
 } from './calculations'
 import { insightT, realityCheckT, translateDay } from './i18n'
 
+/** Prefixes a name naturally: "Jomael, you're over budget." */
+function withName(text: string, name: string): string {
+  if (!name.trim()) return text
+  const n = name.trim()
+  return `${n}, ${text.charAt(0).toLowerCase()}${text.slice(1)}`
+}
+
 export function generateDailyInsight(
   expenses: Expense[],
   dailyBudget: number,
   currency: string,
   language: Language = 'en',
+  name = '',
 ): string {
   const t = insightT(language)
   const today = getDailyTotal(expenses)
@@ -25,12 +33,14 @@ export function generateDailyInsight(
   const lastWeekSameDay = getSameWeekdayLastWeekTotal(expenses)
   const streak = getUnderBudgetStreak(expenses, dailyBudget)
 
+  const say = (text: string) => withName(text, name)
+
   if (today === 0 && expenses.length === 0) {
-    return t.noData()
+    return say(t.noData())
   }
 
-  if (streak >= 3) return t.streak(streak)
-  if (streak === 2) return t.streak2()
+  if (streak >= 3) return say(t.streak(streak))
+  if (streak === 2) return say(t.streak2())
 
   if (lastWeekSameDay > 0 && today > 0) {
     const diff = today - lastWeekSameDay
@@ -38,9 +48,7 @@ export function generateDailyInsight(
     const day = translateDay(format(new Date(), 'EEEE'), language)
 
     if (pct >= 20) {
-      return diff > 0
-        ? t.moreVsLastWeek(pct, day)
-        : t.lessVsLastWeek(pct, day)
+      return say(diff > 0 ? t.moreVsLastWeek(pct, day) : t.lessVsLastWeek(pct, day))
     }
   }
 
@@ -49,9 +57,9 @@ export function generateDailyInsight(
     const pct = Math.abs(Math.round((diff / avg7) * 100))
 
     if (pct >= 15) {
-      return diff > 0
+      return say(diff > 0
         ? t.aboveAvg(pct, formatCurrency(avg7, currency))
-        : t.belowAvg(pct)
+        : t.belowAvg(pct))
     }
   }
 
@@ -60,12 +68,12 @@ export function generateDailyInsight(
   if (todayExpenses.length > 0) {
     const biggest = todayExpenses.reduce((max, e) => (e.amount > max.amount ? e : max))
     if (biggest.label) {
-      return t.biggestItem(biggest.label, formatCurrency(biggest.amount, currency))
+      return say(t.biggestItem(biggest.label, formatCurrency(biggest.amount, currency)))
     }
-    return t.multiExpense(todayExpenses.length, formatCurrency(today, currency))
+    return say(t.multiExpense(todayExpenses.length, formatCurrency(today, currency)))
   }
 
-  return t.noSpendingToday()
+  return say(t.noSpendingToday())
 }
 
 export function generateRealityCheck(
@@ -73,8 +81,10 @@ export function generateRealityCheck(
   dailyBudget: number,
   currency: string,
   language: Language = 'en',
+  name = '',
 ): RealityCheckResult {
   const t = realityCheckT(language)
+  const status = (text: string) => withName(text, name)
   const now = new Date()
   const todayTotal = getDailyTotal(expenses, now)
   const monthlyTotal = getMonthlyTotal(expenses, now)
@@ -94,10 +104,10 @@ export function generateRealityCheck(
     const monthlyOverage = monthlyTotal - monthlyBudget
     const catchUpPerDay = daysLeft > 0 ? Math.ceil(monthlyOverage / daysLeft) : 0
     return {
-      status: t.statusOverBoth(
+      status: status(t.statusOverBoth(
         formatCurrency(dailyOverage, currency),
         formatCurrency(monthlyOverage, currency),
-      ),
+      )),
       tip: daysLeft > 0
         ? t.tipRecoverByMonthEnd(
             formatCurrency(Math.max(0, dailyBudget - catchUpPerDay), currency),
@@ -114,7 +124,7 @@ export function generateRealityCheck(
       ? todayExpenses.reduce((max, e) => (e.amount > max.amount ? e : max))
       : null
     return {
-      status: t.statusOverDaily(formatCurrency(overage, currency)),
+      status: status(t.statusOverDaily(formatCurrency(overage, currency))),
       tip: biggest
         ? t.tipSkipBiggest(biggest.label || '—', formatCurrency(biggest.amount, currency))
         : t.tipSpendNothing(formatCurrency(overage, currency)),
@@ -128,7 +138,7 @@ export function generateRealityCheck(
       ? Math.floor((monthlyBudget - monthlyTotal) / daysLeft)
       : 0
     return {
-      status: t.statusProjectionOver(formatCurrency(projectedOverage, currency)),
+      status: status(t.statusProjectionOver(formatCurrency(projectedOverage, currency))),
       tip: daysLeft > 0
         ? t.tipCapDaily(formatCurrency(targetDailySpend, currency), daysLeft)
         : t.tipFinalDay(),
@@ -140,7 +150,7 @@ export function generateRealityCheck(
     const remaining = dailyBudget - todayTotal
     if (todayTotal / dailyBudget >= 0.8) {
       return {
-        status: t.statusApproaching(formatCurrency(remaining, currency)),
+        status: status(t.statusApproaching(formatCurrency(remaining, currency))),
         tip: t.tipPauseNow(),
       }
     }
@@ -150,7 +160,7 @@ export function generateRealityCheck(
   if (projection > 0 && monthlyBudget > 0) {
     const surplus = monthlyBudget - projection
     return {
-      status: t.statusOnTrack(formatCurrency(surplus, currency)),
+      status: status(t.statusOnTrack(formatCurrency(surplus, currency))),
       tip: t.tipSaveSurplus(),
     }
   }
@@ -159,7 +169,7 @@ export function generateRealityCheck(
   if (todayExpenses.length > 0) {
     const biggest = todayExpenses.reduce((max, e) => (e.amount > max.amount ? e : max))
     return {
-      status: t.statusBiggest(biggest.label || '—', formatCurrency(biggest.amount, currency)),
+      status: status(t.statusBiggest(biggest.label || '—', formatCurrency(biggest.amount, currency))),
       tip: t.tipRecurring(),
     }
   }
@@ -167,13 +177,13 @@ export function generateRealityCheck(
   // ── No spending yet ───────────────────────────────────────────────────────
   if (dailyBudget > 0) {
     return {
-      status: t.statusNoSpending(formatCurrency(dailyBudget, currency)),
+      status: status(t.statusNoSpending(formatCurrency(dailyBudget, currency))),
       tip: t.tipPlanFixed(),
     }
   }
 
   return {
-    status: t.statusFallback(),
+    status: status(t.statusFallback()),
     tip: t.tipSetBudget(),
   }
 }

@@ -28,6 +28,7 @@ export const useExpenseStore = create<ExpenseStore>()(
     (set) => ({
       expenses: [],
       settings: {
+        name: '',
         dailyBudget: 500,
         currency: '₱',
         apiKey: '',

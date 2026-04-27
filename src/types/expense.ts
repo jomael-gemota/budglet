@@ -8,6 +8,7 @@ export interface Expense {
 export type Language = 'en' | 'tl' | 'ceb'
 
 export interface BudgetSettings {
+  name: string
   dailyBudget: number
   currency: string
   apiKey: string

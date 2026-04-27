@@ -5,6 +5,7 @@ import { LANGUAGE_NAMES } from '../utils/i18n'
 
 export function SettingsSheet() {
   const { settings, settingsOpen, updateSettings, setSettingsOpen } = useExpenseStore()
+  const [name, setName] = useState(settings.name)
   const [budget, setBudget] = useState(String(settings.dailyBudget))
   const [currency, setCurrency] = useState(settings.currency)
   const [apiKey, setApiKey] = useState(settings.apiKey)
@@ -14,6 +15,7 @@ export function SettingsSheet() {
 
   useEffect(() => {
     if (settingsOpen) {
+      setName(settings.name)
       setBudget(String(settings.dailyBudget))
       setCurrency(settings.currency)
       setApiKey(settings.apiKey)
@@ -21,13 +23,14 @@ export function SettingsSheet() {
       setLanguage(settings.language)
       setShowKey(false)
     }
-  }, [settingsOpen, settings.dailyBudget, settings.currency, settings.apiKey, settings.aiEnabled, settings.language])
+  }, [settingsOpen, settings.name, settings.dailyBudget, settings.currency, settings.apiKey, settings.aiEnabled, settings.language])
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault()
     const parsed = parseFloat(budget)
     if (!isNaN(parsed) && parsed > 0) {
       updateSettings({
+        name: name.trim() || settings.name,
         dailyBudget: parsed,
         currency: currency.trim() || '₱',
         apiKey: apiKey.trim(),
@@ -70,6 +73,26 @@ export function SettingsSheet() {
         </div>
 
         <form onSubmit={handleSave} className="flex flex-col gap-5">
+          {/* Name */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+              Your Name
+            </label>
+            <input
+              type="text"
+              maxLength={32}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="
+                bg-surface-raised border border-surface-border rounded-xl px-4 py-3
+                text-white text-sm outline-none caret-accent
+                focus:border-accent/60 transition-colors
+              "
+              placeholder="First name"
+              autoComplete="off"
+            />
+          </div>
+
           {/* Daily Budget */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
