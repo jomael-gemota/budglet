@@ -8,6 +8,7 @@ export function SettingsSheet() {
   const [budget, setBudget] = useState(String(settings.dailyBudget))
   const [currency, setCurrency] = useState(settings.currency)
   const [apiKey, setApiKey] = useState(settings.apiKey)
+  const [aiEnabled, setAiEnabled] = useState(settings.aiEnabled)
   const [language, setLanguage] = useState<Language>(settings.language)
   const [showKey, setShowKey] = useState(false)
 
@@ -16,10 +17,11 @@ export function SettingsSheet() {
       setBudget(String(settings.dailyBudget))
       setCurrency(settings.currency)
       setApiKey(settings.apiKey)
+      setAiEnabled(settings.aiEnabled)
       setLanguage(settings.language)
       setShowKey(false)
     }
-  }, [settingsOpen, settings.dailyBudget, settings.currency, settings.apiKey, settings.language])
+  }, [settingsOpen, settings.dailyBudget, settings.currency, settings.apiKey, settings.aiEnabled, settings.language])
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -29,6 +31,7 @@ export function SettingsSheet() {
         dailyBudget: parsed,
         currency: currency.trim() || '₱',
         apiKey: apiKey.trim(),
+        aiEnabled,
         language,
       })
     }
@@ -131,36 +134,67 @@ export function SettingsSheet() {
 
           {/* OpenAI API Key */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-              OpenAI API Key
-            </label>
-            <div className="flex items-center gap-2 bg-surface-raised border border-surface-border rounded-xl px-4 py-3 focus-within:border-accent/60 transition-colors">
-              <input
-                type={showKey ? 'text' : 'password'}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="flex-1 bg-transparent text-white font-mono text-xs outline-none caret-accent tracking-wider"
-                placeholder="sk-..."
-                autoComplete="off"
-                spellCheck={false}
-              />
-              {apiKey && (
-                <button
-                  type="button"
-                  onClick={() => setShowKey((v) => !v)}
-                  className="text-zinc-600 hover:text-zinc-400 transition-colors text-xs shrink-0"
-                  aria-label={showKey ? 'Hide key' : 'Show key'}
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                OpenAI API Key
+              </label>
+              {/* AI toggle */}
+              <button
+                type="button"
+                onClick={() => setAiEnabled((v) => !v)}
+                className="flex items-center gap-1.5 group"
+                aria-label={aiEnabled ? 'Disable AI' : 'Enable AI'}
+              >
+                <span className={`text-xs font-medium transition-colors ${aiEnabled ? 'text-accent' : 'text-zinc-600'}`}>
+                  {aiEnabled ? 'On' : 'Off'}
+                </span>
+                <div
+                  className={`
+                    relative w-9 h-5 rounded-full transition-colors duration-200
+                    ${aiEnabled ? 'bg-accent' : 'bg-zinc-700'}
+                  `}
                 >
-                  {showKey ? 'hide' : 'show'}
-                </button>
-              )}
+                  <span
+                    className={`
+                      absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white
+                      shadow-sm transition-transform duration-200
+                      ${aiEnabled ? 'translate-x-4' : 'translate-x-0'}
+                    `}
+                  />
+                </div>
+              </button>
             </div>
-            <p className="text-xs text-zinc-600 px-1">
-              {apiKey
-                ? 'GPT-powered insights are active.'
-                : 'Optional. Enables GPT-powered insights and reality checks.'}{' '}
-              <span className="text-zinc-700">Stored locally on your device only.</span>
-            </p>
+
+            <div className={`transition-opacity duration-200 ${aiEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
+              <div className="flex items-center gap-2 bg-surface-raised border border-surface-border rounded-xl px-4 py-3 focus-within:border-accent/60 transition-colors">
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  disabled={!aiEnabled}
+                  className="flex-1 bg-transparent text-white font-mono text-xs outline-none caret-accent tracking-wider disabled:cursor-not-allowed"
+                  placeholder="sk-..."
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {apiKey && (
+                  <button
+                    type="button"
+                    onClick={() => setShowKey((v) => !v)}
+                    className="text-zinc-600 hover:text-zinc-400 transition-colors text-xs shrink-0"
+                    aria-label={showKey ? 'Hide key' : 'Show key'}
+                  >
+                    {showKey ? 'hide' : 'show'}
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-zinc-600 px-1 mt-1.5">
+                {apiKey
+                  ? 'GPT-powered insights are active.'
+                  : 'Optional. Enables GPT-powered insights and reality checks.'}{' '}
+                <span className="text-zinc-700">Stored locally on your device only.</span>
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-1">

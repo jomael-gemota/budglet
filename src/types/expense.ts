@@ -11,6 +11,7 @@ export interface BudgetSettings {
   dailyBudget: number
   currency: string
   apiKey: string
+  aiEnabled: boolean
   language: Language
 }
 

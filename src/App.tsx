@@ -56,7 +56,7 @@ export default function App() {
       language: settings.language,
     }
 
-    if (settings.apiKey) {
+    if (settings.apiKey && settings.aiEnabled) {
       // GPT mode: once per day, but re-run if forced or if no real data was cached yet
       const alreadyCached =
         !force && dailyInsight?.generatedOn === key && expenses.length > 0
@@ -92,7 +92,7 @@ export default function App() {
   // Re-run whenever expenses or settings change so the insight stays current.
   // For GPT mode the alreadyCached guard prevents redundant API calls.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey, settings.language])
+  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey, settings.aiEnabled, settings.language])
 
   // ── Reality Check (debounced, re-runs on every expense change) ──────────────
   const realityDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -107,7 +107,7 @@ export default function App() {
       language: settings.language,
     }
 
-    if (settings.apiKey) {
+    if (settings.apiKey && settings.aiEnabled) {
       setRealityCheckLoading(true)
       realityDebounceRef.current = setTimeout(() => {
         fetchGptRealityCheck(buildRealityCheckPrompt(ctx), settings.apiKey)
@@ -129,7 +129,7 @@ export default function App() {
     return () => {
       if (realityDebounceRef.current) clearTimeout(realityDebounceRef.current)
     }
-  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey, settings.language]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey, settings.aiEnabled, settings.language]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const insightText =
     dailyInsight?.text ??

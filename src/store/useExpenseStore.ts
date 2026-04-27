@@ -31,6 +31,7 @@ export const useExpenseStore = create<ExpenseStore>()(
         dailyBudget: 500,
         currency: '₱',
         apiKey: '',
+        aiEnabled: true,
         language: 'en',
       },
       dailyInsight: null,
