@@ -98,36 +98,50 @@ export function generateRealityCheck(
   const overDaily = dailyBudget > 0 && todayTotal > dailyBudget
   const overMonthly = monthlyBudget > 0 && monthlyTotal > monthlyBudget
 
+  // Severity: how far over the daily budget (ratio, e.g. 0.5 = 50% over)
+  const overDailyRatio = dailyBudget > 0 ? (todayTotal - dailyBudget) / dailyBudget : 0
+  const severe = overDailyRatio > 0.5
+
   // ── Over daily AND monthly ────────────────────────────────────────────────
   if (overDaily && overMonthly) {
     const dailyOverage = todayTotal - dailyBudget
     const monthlyOverage = monthlyTotal - monthlyBudget
     const catchUpPerDay = daysLeft > 0 ? Math.ceil(monthlyOverage / daysLeft) : 0
+    const underPerDay = formatCurrency(Math.max(0, dailyBudget - catchUpPerDay), currency)
     return {
-      status: status(t.statusOverBoth(
-        formatCurrency(dailyOverage, currency),
-        formatCurrency(monthlyOverage, currency),
-      )),
-      tip: daysLeft > 0
-        ? t.tipRecoverByMonthEnd(
-            formatCurrency(Math.max(0, dailyBudget - catchUpPerDay), currency),
-            daysLeft,
+      status: status(severe
+        ? t.statusOverBothSevere(
+            formatCurrency(dailyOverage, currency),
+            formatCurrency(monthlyOverage, currency),
           )
-        : t.tipLastDayBoth(),
+        : t.statusOverBoth(
+            formatCurrency(dailyOverage, currency),
+            formatCurrency(monthlyOverage, currency),
+          )
+      ),
+      tip: daysLeft > 0
+        ? (severe ? t.tipRecoverEmergency(underPerDay, daysLeft) : t.tipRecoverByMonthEnd(underPerDay, daysLeft))
+        : (severe ? t.tipLastDayBothSevere() : t.tipLastDayBoth()),
     }
   }
 
   // ── Over daily only ───────────────────────────────────────────────────────
   if (overDaily) {
     const overage = todayTotal - dailyBudget
+    const overPct = Math.round(overDailyRatio * 100)
     const biggest = todayExpenses.length > 0
       ? todayExpenses.reduce((max, e) => (e.amount > max.amount ? e : max))
       : null
     return {
-      status: status(t.statusOverDaily(formatCurrency(overage, currency))),
-      tip: biggest
-        ? t.tipSkipBiggest(biggest.label || '—', formatCurrency(biggest.amount, currency))
-        : t.tipSpendNothing(formatCurrency(overage, currency)),
+      status: status(severe
+        ? t.statusOverDailySevere(formatCurrency(overage, currency), overPct)
+        : t.statusOverDaily(formatCurrency(overage, currency))
+      ),
+      tip: severe
+        ? t.tipShutItDown()
+        : biggest
+          ? t.tipSkipBiggest(biggest.label || '—', formatCurrency(biggest.amount, currency))
+          : t.tipSpendNothing(formatCurrency(overage, currency)),
     }
   }
 

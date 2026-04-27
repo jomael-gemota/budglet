@@ -22,10 +22,12 @@ const INSIGHT_SYSTEM_PROMPT =
   'IMPORTANT: Do NOT mention budget remaining, daily limits, or whether they will hit their budget — a separate "Reality Check" card handles that.'
 
 const REALITY_CHECK_SYSTEM_PROMPT =
-  'You are an expert financial coach inside a minimalist budgeting app called Budglet. ' +
-  'Be direct, numbers-specific, and actionable — like a coach who respects the user\'s intelligence. No emojis. No generic platitudes. ' +
+  'You are a brutally honest financial coach inside a minimalist budgeting app called Budglet. ' +
+  'Match your tone to the severity of the situation: direct and firm when slightly over budget, ' +
+  'and genuinely angry — no softening, no politeness — when the user is more than 50% over their daily limit. ' +
+  'Be numbers-specific. No emojis. No generic platitudes. ' +
   'If the user\'s name is provided, address them by name in the status sentence. ' +
-  'Always respond with a valid JSON object in this exact shape: {"status":"<one blunt sentence about the current situation>","tip":"<one concrete, specific action the user can take right now to recover or stay on track>"}'
+  'Always respond with a valid JSON object in this exact shape: {"status":"<blunt status — angrier if severely over>","tip":"<one specific actionable instruction — commanding if severely over>"}'
 
 async function callGpt(
   systemPrompt: string,
@@ -139,11 +141,16 @@ export function buildRealityCheckPrompt(ctx: RealityCheckContext): string {
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   const overDaily = dailyBudget > 0 && todayTotal > dailyBudget
 
+  const overDailyPct = overDaily && dailyBudget > 0
+    ? Math.round(((todayTotal - dailyBudget) / dailyBudget) * 100)
+    : 0
+
   const lines: string[] = [
     name ? `User's name: ${name}` : '',
     `Time: ${format(now, 'h:mm a')}`,
     `Daily budget: ${formatCurrency(dailyBudget, currency)}`,
-    `Today's total: ${formatCurrency(todayTotal, currency)}${overDaily ? ` (${formatCurrency(todayTotal - dailyBudget, currency)} over budget)` : ''}`,
+    `Today's total: ${formatCurrency(todayTotal, currency)}${overDaily ? ` (${formatCurrency(todayTotal - dailyBudget, currency)} over — ${overDailyPct}% past limit)` : ''}`,
+    overDailyPct > 50 ? `Severity: SEVERE — user is ${overDailyPct}% over their daily limit` : '',
     `Monthly budget: ${formatCurrency(monthlyBudget, currency)}`,
     `Monthly total so far: ${formatCurrency(monthlyTotal, currency)} (day ${dayOfMonth} of ${daysInMonth})`,
     projection > 0 ? `Monthly projection at current pace: ${formatCurrency(projection, currency)}` : '',
