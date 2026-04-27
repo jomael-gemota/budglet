@@ -47,7 +47,12 @@ export default function App() {
 
   const triggerInsight = (force = false) => {
     const key = todayKey()
-    const ctx = { expenses, dailyBudget: settings.dailyBudget, currency: settings.currency }
+    const ctx = {
+      expenses,
+      dailyBudget: settings.dailyBudget,
+      currency: settings.currency,
+      language: settings.language,
+    }
 
     if (settings.apiKey) {
       // GPT mode: once per day, but re-run if forced or if no real data was cached yet
@@ -62,7 +67,7 @@ export default function App() {
           .then((text) => setDailyInsight({ text, generatedOn: key }))
           .catch(() =>
             setDailyInsight({
-              text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency),
+              text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language),
               generatedOn: key,
             })
           )
@@ -71,7 +76,7 @@ export default function App() {
     } else {
       // Rule-based: always live, no API cost
       setDailyInsight({
-        text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency),
+        text: generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language),
         generatedOn: key,
       })
     }
@@ -85,7 +90,7 @@ export default function App() {
   // Re-run whenever expenses or settings change so the insight stays current.
   // For GPT mode the alreadyCached guard prevents redundant API calls.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey])
+  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey, settings.language])
 
   // ── Reality Check (debounced, re-runs on every expense change) ──────────────
   const realityDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -93,7 +98,12 @@ export default function App() {
   useEffect(() => {
     if (realityDebounceRef.current) clearTimeout(realityDebounceRef.current)
 
-    const ctx = { expenses, dailyBudget: settings.dailyBudget, currency: settings.currency }
+    const ctx = {
+      expenses,
+      dailyBudget: settings.dailyBudget,
+      currency: settings.currency,
+      language: settings.language,
+    }
 
     if (settings.apiKey) {
       setRealityCheckLoading(true)
@@ -102,7 +112,7 @@ export default function App() {
           .then((result) => setRealityCheck(result))
           .catch(() =>
             setRealityCheck(
-              generateRealityCheck(expenses, settings.dailyBudget, settings.currency)
+              generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language)
             )
           )
           .finally(() => setRealityCheckLoading(false))
@@ -110,22 +120,22 @@ export default function App() {
     } else {
       setRealityCheckLoading(false)
       setRealityCheck(
-        generateRealityCheck(expenses, settings.dailyBudget, settings.currency)
+        generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language)
       )
     }
 
     return () => {
       if (realityDebounceRef.current) clearTimeout(realityDebounceRef.current)
     }
-  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [expenses, settings.dailyBudget, settings.currency, settings.apiKey, settings.language]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const insightText =
     dailyInsight?.text ??
-    generateDailyInsight(expenses, settings.dailyBudget, settings.currency)
+    generateDailyInsight(expenses, settings.dailyBudget, settings.currency, settings.language)
 
   const realityResult =
     realityCheck ??
-    generateRealityCheck(expenses, settings.dailyBudget, settings.currency)
+    generateRealityCheck(expenses, settings.dailyBudget, settings.currency, settings.language)
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">

@@ -5,10 +5,13 @@ export interface Expense {
   timestamp: number
 }
 
+export type Language = 'en' | 'tl' | 'ceb'
+
 export interface BudgetSettings {
   dailyBudget: number
   currency: string
   apiKey: string
+  language: Language
 }
 
 export interface DailyInsight {

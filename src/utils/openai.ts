@@ -1,5 +1,6 @@
 import { format } from 'date-fns'
-import type { Expense, RealityCheckResult } from '../types/expense'
+import type { Expense, RealityCheckResult, Language } from '../types/expense'
+import { GPT_LANGUAGE_INSTRUCTION } from './i18n'
 import {
   getDailyTotal,
   getMonthlyTotal,
@@ -78,10 +79,11 @@ export interface InsightContext {
   expenses: Expense[]
   dailyBudget: number
   currency: string
+  language: Language
 }
 
 export function buildInsightPrompt(ctx: InsightContext): string {
-  const { expenses, dailyBudget, currency } = ctx
+  const { expenses, dailyBudget, currency, language } = ctx
   const now = new Date()
 
   const todayTotal = getDailyTotal(expenses, now)
@@ -104,9 +106,11 @@ export function buildInsightPrompt(ctx: InsightContext): string {
     streak > 0 ? `Under-budget streak: ${streak} day(s)` : '',
   ].filter(Boolean)
 
+  const langInstruction = GPT_LANGUAGE_INSTRUCTION[language]
   return (
     lines.join('\n') +
-    '\n\nGenerate a single behavioral observation about this user\'s spending pattern today — compare to their history or highlight the biggest item. Do NOT mention how much budget is left or whether they will hit their budget limit.'
+    '\n\nGenerate a single behavioral observation about this user\'s spending pattern today — compare to their history or highlight the biggest item. Do NOT mention how much budget is left or whether they will hit their budget limit.' +
+    (langInstruction ? `\n${langInstruction}` : '')
   )
 }
 
@@ -114,10 +118,11 @@ export interface RealityCheckContext {
   expenses: Expense[]
   dailyBudget: number
   currency: string
+  language: Language
 }
 
 export function buildRealityCheckPrompt(ctx: RealityCheckContext): string {
-  const { expenses, dailyBudget, currency } = ctx
+  const { expenses, dailyBudget, currency, language } = ctx
   const now = new Date()
 
   const todayTotal = getDailyTotal(expenses, now)
@@ -139,10 +144,12 @@ export function buildRealityCheckPrompt(ctx: RealityCheckContext): string {
     biggest ? `Biggest expense today: "${biggest.label || 'unlabeled'}" at ${formatCurrency(biggest.amount, currency)}` : '',
   ].filter(Boolean)
 
+  const langInstruction = GPT_LANGUAGE_INSTRUCTION[language]
   return (
     lines.join('\n') +
     '\n\nAssess the user\'s financial situation and respond with a JSON object containing:\n' +
     '- "status": one blunt sentence stating exactly where they stand right now\n' +
-    '- "tip": one specific, actionable coaching instruction to recover or stay on track (use the exact numbers from the data above)'
+    '- "tip": one specific, actionable coaching instruction to recover or stay on track (use the exact numbers from the data above)' +
+    (langInstruction ? `\n${langInstruction}` : '')
   )
 }

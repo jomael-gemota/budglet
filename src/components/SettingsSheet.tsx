@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useExpenseStore } from '../store/useExpenseStore'
+import type { Language } from '../types/expense'
+import { LANGUAGE_NAMES } from '../utils/i18n'
 
 export function SettingsSheet() {
   const { settings, settingsOpen, updateSettings, setSettingsOpen } = useExpenseStore()
   const [budget, setBudget] = useState(String(settings.dailyBudget))
   const [currency, setCurrency] = useState(settings.currency)
   const [apiKey, setApiKey] = useState(settings.apiKey)
+  const [language, setLanguage] = useState<Language>(settings.language)
   const [showKey, setShowKey] = useState(false)
 
   useEffect(() => {
@@ -13,9 +16,10 @@ export function SettingsSheet() {
       setBudget(String(settings.dailyBudget))
       setCurrency(settings.currency)
       setApiKey(settings.apiKey)
+      setLanguage(settings.language)
       setShowKey(false)
     }
-  }, [settingsOpen, settings.dailyBudget, settings.currency, settings.apiKey])
+  }, [settingsOpen, settings.dailyBudget, settings.currency, settings.apiKey, settings.language])
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -25,6 +29,7 @@ export function SettingsSheet() {
         dailyBudget: parsed,
         currency: currency.trim() || '₱',
         apiKey: apiKey.trim(),
+        language,
       })
     }
     setSettingsOpen(false)
@@ -98,6 +103,30 @@ export function SettingsSheet() {
               "
               placeholder="₱"
             />
+          </div>
+
+          {/* Language */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+              Language
+            </label>
+            <div className="flex gap-2">
+              {(Object.entries(LANGUAGE_NAMES) as [Language, string][]).map(([code, name]) => (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => setLanguage(code)}
+                  className={`
+                    flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors border
+                    ${language === code
+                      ? 'bg-accent text-black border-accent'
+                      : 'bg-surface-raised text-zinc-400 border-surface-border hover:border-zinc-600'}
+                  `}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* OpenAI API Key */}
