@@ -5,19 +5,27 @@ export function SettingsSheet() {
   const { settings, settingsOpen, updateSettings, setSettingsOpen } = useExpenseStore()
   const [budget, setBudget] = useState(String(settings.dailyBudget))
   const [currency, setCurrency] = useState(settings.currency)
+  const [apiKey, setApiKey] = useState(settings.apiKey)
+  const [showKey, setShowKey] = useState(false)
 
   useEffect(() => {
     if (settingsOpen) {
       setBudget(String(settings.dailyBudget))
       setCurrency(settings.currency)
+      setApiKey(settings.apiKey)
+      setShowKey(false)
     }
-  }, [settingsOpen, settings.dailyBudget, settings.currency])
+  }, [settingsOpen, settings.dailyBudget, settings.currency, settings.apiKey])
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault()
     const parsed = parseFloat(budget)
     if (!isNaN(parsed) && parsed > 0) {
-      updateSettings({ dailyBudget: parsed, currency: currency.trim() || '₱' })
+      updateSettings({
+        dailyBudget: parsed,
+        currency: currency.trim() || '₱',
+        apiKey: apiKey.trim(),
+      })
     }
     setSettingsOpen(false)
   }
@@ -54,6 +62,7 @@ export function SettingsSheet() {
         </div>
 
         <form onSubmit={handleSave} className="flex flex-col gap-5">
+          {/* Daily Budget */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Daily Budget
@@ -72,6 +81,7 @@ export function SettingsSheet() {
             </div>
           </div>
 
+          {/* Currency Symbol */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Currency Symbol
@@ -88,6 +98,40 @@ export function SettingsSheet() {
               "
               placeholder="₱"
             />
+          </div>
+
+          {/* OpenAI API Key */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+              OpenAI API Key
+            </label>
+            <div className="flex items-center gap-2 bg-surface-raised border border-surface-border rounded-xl px-4 py-3 focus-within:border-accent/60 transition-colors">
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="flex-1 bg-transparent text-white font-mono text-xs outline-none caret-accent tracking-wider"
+                placeholder="sk-..."
+                autoComplete="off"
+                spellCheck={false}
+              />
+              {apiKey && (
+                <button
+                  type="button"
+                  onClick={() => setShowKey((v) => !v)}
+                  className="text-zinc-600 hover:text-zinc-400 transition-colors text-xs shrink-0"
+                  aria-label={showKey ? 'Hide key' : 'Show key'}
+                >
+                  {showKey ? 'hide' : 'show'}
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-zinc-600 px-1">
+              {apiKey
+                ? 'GPT-powered insights are active.'
+                : 'Optional. Enables GPT-powered insights and reality checks.'}{' '}
+              <span className="text-zinc-700">Stored locally on your device only.</span>
+            </p>
           </div>
 
           <div className="flex gap-3 pt-1">

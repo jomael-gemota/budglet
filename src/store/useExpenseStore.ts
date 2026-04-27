@@ -1,17 +1,23 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Expense, BudgetSettings, DailyInsight } from '../types/expense'
+import type { Expense, BudgetSettings, DailyInsight, RealityCheckResult } from '../types/expense'
 
 interface ExpenseStore {
   expenses: Expense[]
   settings: BudgetSettings
   dailyInsight: DailyInsight | null
+  realityCheck: RealityCheckResult | null
+  insightLoading: boolean
+  realityCheckLoading: boolean
   settingsOpen: boolean
 
   addExpense: (expense: Expense) => void
   deleteExpense: (id: string) => void
   updateSettings: (settings: Partial<BudgetSettings>) => void
   setDailyInsight: (insight: DailyInsight) => void
+  setRealityCheck: (result: RealityCheckResult) => void
+  setInsightLoading: (loading: boolean) => void
+  setRealityCheckLoading: (loading: boolean) => void
   setSettingsOpen: (open: boolean) => void
 }
 
@@ -22,8 +28,12 @@ export const useExpenseStore = create<ExpenseStore>()(
       settings: {
         dailyBudget: 500,
         currency: '₱',
+        apiKey: '',
       },
       dailyInsight: null,
+      realityCheck: null,
+      insightLoading: false,
+      realityCheckLoading: false,
       settingsOpen: false,
 
       addExpense: (expense) =>
@@ -42,6 +52,12 @@ export const useExpenseStore = create<ExpenseStore>()(
         })),
 
       setDailyInsight: (insight) => set({ dailyInsight: insight }),
+
+      setRealityCheck: (result) => set({ realityCheck: result }),
+
+      setInsightLoading: (loading) => set({ insightLoading: loading }),
+
+      setRealityCheckLoading: (loading) => set({ realityCheckLoading: loading }),
 
       setSettingsOpen: (open) => set({ settingsOpen: open }),
     }),
