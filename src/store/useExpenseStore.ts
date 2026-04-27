@@ -10,6 +10,7 @@ interface ExpenseStore {
   insightLoading: boolean
   realityCheckLoading: boolean
   settingsOpen: boolean
+  historyOpen: boolean
 
   addExpense: (expense: Expense) => void
   deleteExpense: (id: string) => void
@@ -19,6 +20,7 @@ interface ExpenseStore {
   setInsightLoading: (loading: boolean) => void
   setRealityCheckLoading: (loading: boolean) => void
   setSettingsOpen: (open: boolean) => void
+  setHistoryOpen: (open: boolean) => void
 }
 
 export const useExpenseStore = create<ExpenseStore>()(
@@ -36,6 +38,7 @@ export const useExpenseStore = create<ExpenseStore>()(
       insightLoading: false,
       realityCheckLoading: false,
       settingsOpen: false,
+      historyOpen: false,
 
       addExpense: (expense) =>
         set((state) => ({
@@ -61,6 +64,8 @@ export const useExpenseStore = create<ExpenseStore>()(
       setRealityCheckLoading: (loading) => set({ realityCheckLoading: loading }),
 
       setSettingsOpen: (open) => set({ settingsOpen: open }),
+
+      setHistoryOpen: (open) => set({ historyOpen: open }),
     }),
     {
       name: 'budglet-storage',

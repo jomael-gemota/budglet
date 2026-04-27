@@ -6,16 +6,25 @@ import { useExpenseStore } from '../store/useExpenseStore'
 interface ExpenseListProps {
   expenses: Expense[]
   currency: string
+  emptyMessage?: string
+  emptySubMessage?: string
+  readOnly?: boolean
 }
 
-export function ExpenseList({ expenses, currency }: ExpenseListProps) {
+export function ExpenseList({
+  expenses,
+  currency,
+  emptyMessage = 'No expenses today.',
+  emptySubMessage = 'Add one above to get started.',
+  readOnly = false,
+}: ExpenseListProps) {
   const deleteExpense = useExpenseStore((s) => s.deleteExpense)
 
   if (expenses.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-zinc-600 text-sm">No expenses today.</p>
-        <p className="text-zinc-700 text-xs mt-1">Add one above to get started.</p>
+        <p className="text-zinc-600 text-sm">{emptyMessage}</p>
+        <p className="text-zinc-700 text-xs mt-1">{emptySubMessage}</p>
       </div>
     )
   }
@@ -27,7 +36,7 @@ export function ExpenseList({ expenses, currency }: ExpenseListProps) {
           key={expense.id}
           expense={expense}
           currency={currency}
-          onDelete={() => deleteExpense(expense.id)}
+          onDelete={readOnly ? undefined : () => deleteExpense(expense.id)}
         />
       ))}
     </div>
@@ -37,7 +46,7 @@ export function ExpenseList({ expenses, currency }: ExpenseListProps) {
 interface ExpenseRowProps {
   expense: Expense
   currency: string
-  onDelete: () => void
+  onDelete?: () => void
 }
 
 function ExpenseRow({ expense, currency, onDelete }: ExpenseRowProps) {
@@ -64,18 +73,20 @@ function ExpenseRow({ expense, currency, onDelete }: ExpenseRowProps) {
         <span className="text-white font-mono text-sm font-medium">
           {formatCurrency(expense.amount, currency)}
         </span>
-        <button
-          onClick={onDelete}
-          className="
-            opacity-0 group-hover:opacity-100
-            text-zinc-600 hover:text-red-400
-            transition-all duration-100
-            text-xs px-1 py-0.5 rounded
-          "
-          aria-label="Delete expense"
-        >
-          ✕
-        </button>
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="
+              opacity-0 group-hover:opacity-100
+              text-zinc-600 hover:text-red-400
+              transition-all duration-100
+              text-xs px-1 py-0.5 rounded
+            "
+            aria-label="Delete expense"
+          >
+            ✕
+          </button>
+        )}
       </div>
     </div>
   )

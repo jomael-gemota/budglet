@@ -7,6 +7,7 @@ import { ExpenseList } from './components/ExpenseList'
 import { InsightCard } from './components/InsightCard'
 import { RealityCheck } from './components/RealityCheck'
 import { SettingsSheet } from './components/SettingsSheet'
+import { HistorySheet } from './components/HistorySheet'
 import {
   getDailyTotal,
   getMonthlyTotal,
@@ -34,6 +35,7 @@ export default function App() {
     setInsightLoading,
     setRealityCheckLoading,
     setSettingsOpen,
+    setHistoryOpen,
   } = useExpenseStore()
 
   const today = new Date()
@@ -145,10 +147,23 @@ export default function App() {
           <span className="text-accent font-bold text-lg font-mono">B</span>
           <span className="text-white font-semibold text-base tracking-tight">budglet</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-zinc-600 text-xs font-mono">
+        <div className="flex items-center gap-2">
+          <span className="text-zinc-600 text-xs font-mono mr-1">
             {format(today, 'EEE, MMM d')}
           </span>
+          {/* History */}
+          <button
+            onClick={() => setHistoryOpen(true)}
+            className="text-zinc-500 hover:text-white transition-colors p-1"
+            aria-label="View expense history"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M5 10h2M9 10h2M5 12.5h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+          {/* Settings */}
           <button
             onClick={() => setSettingsOpen(true)}
             className="text-zinc-500 hover:text-white transition-colors p-1"
@@ -216,6 +231,9 @@ export default function App() {
 
       {/* Settings sheet */}
       <SettingsSheet />
+
+      {/* History sheet */}
+      <HistorySheet />
     </div>
   )
 }
