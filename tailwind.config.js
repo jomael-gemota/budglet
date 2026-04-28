@@ -12,13 +12,13 @@ export default {
       },
       colors: {
         accent: {
-          DEFAULT: '#a3e635',
-          dark: '#84cc16',
+          DEFAULT: '#f2c94c',
+          dark: '#d6a739',
         },
         surface: {
-          DEFAULT: '#111111',
-          raised: '#1a1a1a',
-          border: '#2a2a2a',
+          DEFAULT: '#101010',
+          raised: '#171717',
+          border: '#2f2718',
         },
       },
       animation: {

@@ -44,9 +44,9 @@ export function ExpenseInput() {
           relative flex items-center gap-2
           rounded-xl border px-4 py-3.5
           transition-all duration-150
-          ${flash ? 'border-accent bg-accent/10' : 'border-surface-border bg-surface-raised'}
+          ${flash ? 'border-accent bg-accent/10 shadow-[0_0_24px_rgba(242,201,76,0.16)]' : 'border-surface-border bg-surface-raised'}
           ${shake ? 'animate-[shake_0.4s_ease]' : ''}
-          focus-within:border-accent/60
+          focus-within:border-accent/60 focus-within:shadow-[0_0_0_1px_rgba(242,201,76,0.3)]
         `}
       >
         <span className="text-accent font-mono text-lg select-none">+</span>
@@ -80,9 +80,9 @@ export function ExpenseInput() {
           </button>
         )}
       </div>
-      <p className="mt-1.5 text-xs text-zinc-600 px-1">
+      <p className="mt-1.5 text-xs text-zinc-500 px-1">
         Format: <span className="text-zinc-500 font-mono">amount label</span> — e.g.{' '}
-        <span className="text-zinc-500 font-mono">85 grab</span>
+        <span className="text-zinc-400 font-mono">85 grab</span>
       </p>
     </form>
   )

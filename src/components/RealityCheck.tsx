@@ -7,10 +7,10 @@ interface RealityCheckProps {
 
 export function RealityCheck({ result, loading = false }: RealityCheckProps) {
   return (
-    <div className="bg-surface-raised border border-amber-500/20 rounded-xl px-4 py-3.5 flex items-start gap-3">
-      <span className="text-amber-400 text-base shrink-0 mt-0.5" aria-hidden>!</span>
+    <div className="bg-surface-raised border border-accent/30 rounded-xl px-4 py-3.5 flex items-start gap-3 shadow-[0_12px_28px_rgba(0,0,0,0.32)]">
+      <span className="text-accent text-base shrink-0 mt-0.5" aria-hidden>!</span>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-amber-500/70 uppercase tracking-wider mb-2">
+        <p className="text-xs font-semibold text-accent/80 uppercase tracking-wider mb-2">
           Reality Check
         </p>
         {loading ? (

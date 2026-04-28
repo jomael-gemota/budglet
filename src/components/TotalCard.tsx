@@ -13,11 +13,11 @@ export function TotalCard({ label, spent, budget, currency }: TotalCardProps) {
   const remaining = budget > 0 ? budget - spent : null
 
   return (
-    <div className="flex-1 bg-surface-raised rounded-xl p-4 flex flex-col gap-2.5 min-w-0">
+    <div className="flex-1 bg-surface-raised border border-surface-border rounded-xl p-4 flex flex-col gap-2.5 min-w-0 shadow-[0_0_0_1px_rgba(242,201,76,0.06)]">
       <div className="flex items-start justify-between gap-2">
         <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{label}</span>
         {over && (
-          <span className="text-xs font-semibold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">
+          <span className="text-xs font-semibold text-red-300 bg-red-500/15 px-1.5 py-0.5 rounded">
             over
           </span>
         )}

@@ -37,6 +37,7 @@ export default function App() {
     setRealityCheckLoading,
     setSettingsOpen,
     setHistoryOpen,
+    logout,
   } = useExpenseStore()
 
   const today = new Date()
@@ -145,13 +146,15 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-surface-border px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-10 bg-[#0a0a0a]/92 backdrop-blur-sm border-b border-surface-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-accent font-bold text-lg font-mono">B</span>
+          <div className="w-8 h-8 rounded-lg overflow-hidden ring-1 ring-accent/35 shadow-[0_0_20px_rgba(242,201,76,0.18)]">
+            <img src="/budglet-logo.png" alt="Budglet logo" className="w-full h-full object-cover" />
+          </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-white font-semibold text-base tracking-tight">budglet</span>
+            <span className="text-[#f6deb0] font-semibold text-base tracking-tight">budglet</span>
             {settings.name && (
-              <span className="text-zinc-500 text-xs">Hey, {settings.name}</span>
+              <span className="text-zinc-400 text-xs">Hey, {settings.name}</span>
             )}
           </div>
         </div>
@@ -162,7 +165,7 @@ export default function App() {
           {/* History */}
           <button
             onClick={() => setHistoryOpen(true)}
-            className="text-zinc-500 hover:text-white transition-colors p-1"
+            className="text-zinc-500 hover:text-accent transition-colors p-1"
             aria-label="View expense history"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -171,19 +174,43 @@ export default function App() {
               <path d="M5 10h2M9 10h2M5 12.5h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
-          {/* Settings */}
+          {/* Settings — cogs icon */}
           <button
             onClick={() => setSettingsOpen(true)}
-            className="text-zinc-500 hover:text-white transition-colors p-1"
+            className="text-zinc-500 hover:text-accent transition-colors p-1"
             aria-label="Open settings"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
-                d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
+                d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+              />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={logout}
+            className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+            aria-label="Logout"
+            title="Logout"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+              />
+              <polyline
+                points="16 17 21 12 16 7"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+              />
+              <line
+                x1="21" y1="12" x2="9" y2="12"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
               />
             </svg>
           </button>

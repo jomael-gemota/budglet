@@ -6,7 +6,7 @@ interface InsightCardProps {
 
 export function InsightCard({ text, loading = false, onRefresh }: InsightCardProps) {
   return (
-    <div className="bg-surface-raised border border-surface-border rounded-xl px-4 py-3.5 flex items-start gap-3">
+    <div className="bg-surface-raised border border-surface-border rounded-xl px-4 py-3.5 flex items-start gap-3 shadow-[0_10px_24px_rgba(0,0,0,0.28)]">
       <span className="text-accent text-base shrink-0 mt-0.5" aria-hidden>◆</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">

@@ -47,7 +47,7 @@ export function HistorySheet() {
       <div
         className="
           fixed inset-x-0 bottom-0 z-50
-          bg-[#111111] border-t border-surface-border
+          bg-[#141210] border-t border-surface-border
           rounded-t-2xl
           flex flex-col
           max-h-[92dvh]
@@ -58,7 +58,7 @@ export function HistorySheet() {
         {/* Fixed header */}
         <div className="flex-shrink-0 px-5 pt-5 pb-3 border-b border-surface-border">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-semibold text-base">Expense Log</h2>
+            <h2 className="text-[#f6deb0] font-semibold text-base">Expense Log</h2>
             <button
               onClick={() => setHistoryOpen(false)}
               className="text-zinc-500 hover:text-white transition-colors text-lg"

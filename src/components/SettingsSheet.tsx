@@ -41,6 +41,7 @@ export function SettingsSheet() {
     setSettingsOpen(false)
   }
 
+
   if (!settingsOpen) return null
 
   return (
@@ -55,14 +56,14 @@ export function SettingsSheet() {
       <div
         className="
           fixed bottom-0 left-0 right-0 z-50
-          bg-[#161616] border-t border-surface-border
+          bg-[#141210] border-t border-surface-border
           rounded-t-2xl px-5 py-6
           animate-slide-up
           max-w-lg mx-auto
         "
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white font-semibold text-base">Settings</h2>
+          <h2 className="text-[#f6deb0] font-semibold text-base">Settings</h2>
           <button
             onClick={() => setSettingsOpen(false)}
             className="text-zinc-500 hover:text-white transition-colors text-lg"
@@ -235,6 +236,7 @@ export function SettingsSheet() {
               Save
             </button>
           </div>
+
         </form>
       </div>
     </>
