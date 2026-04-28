@@ -2,7 +2,7 @@
   <img src="./public/budglet-logo.png" alt="Budglet logo" width="120" />
 </p>
 
-<h1 align="center">budglet</h1>
+<h1 align="center">Budglet</h1>
 
 <p align="center"><em>Brutally simple budgeting. Tells you the truth about your spending.</em></p>
 
