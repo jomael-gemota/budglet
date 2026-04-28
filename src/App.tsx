@@ -14,6 +14,7 @@ import {
   getMonthlyTotal,
   getMonthlyBudget,
   getExpensesForDay,
+  getUnderBudgetStreak,
 } from './utils/calculations'
 import { generateDailyInsight, generateRealityCheck, todayKey } from './utils/insights'
 import {
@@ -45,6 +46,18 @@ export default function App() {
   const dailyTotal = getDailyTotal(expenses, today)
   const monthlyTotal = getMonthlyTotal(expenses, today)
   const monthlyBudget = getMonthlyBudget(settings.dailyBudget, today)
+  const streak = getUnderBudgetStreak(expenses, settings.dailyBudget)
+
+  const isGreenDay =
+    settings.dailyBudget > 0 &&
+    todayExpenses.length > 0 &&
+    dailyTotal < settings.dailyBudget
+
+  const dayOfMonth = today.getDate()
+  const isMonthlyOnTrack =
+    settings.dailyBudget > 0 &&
+    dayOfMonth > 1 &&
+    monthlyTotal < settings.dailyBudget * dayOfMonth * 0.85
 
   // ── Daily Insight ───────────────────────────────────────────────────────────
   const insightDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -159,6 +172,14 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {streak >= 2 && (
+            <span
+              className="flex items-center gap-1 text-xs font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20"
+              title={`${streak}-day under-budget streak`}
+            >
+              🔥 {streak}
+            </span>
+          )}
           <span className="text-zinc-600 text-xs font-mono mr-1">
             {format(today, 'EEE, MMM d')}
           </span>
@@ -229,12 +250,14 @@ export default function App() {
             spent={dailyTotal}
             budget={settings.dailyBudget}
             currency={settings.currency}
+            greenDay={isGreenDay}
           />
           <TotalCard
             label="This month"
             spent={monthlyTotal}
             budget={monthlyBudget}
             currency={settings.currency}
+            onTrack={isMonthlyOnTrack}
           />
         </div>
 

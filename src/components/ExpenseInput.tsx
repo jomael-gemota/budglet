@@ -2,13 +2,16 @@ import { useState, useRef, useEffect } from 'react'
 import { nanoid } from '../utils/nanoid'
 import { parseExpense } from '../utils/parseExpense'
 import { useExpenseStore } from '../store/useExpenseStore'
+import { getExpensesForDay } from '../utils/calculations'
 
 export function ExpenseInput() {
   const [value, setValue] = useState('')
   const [shake, setShake] = useState(false)
   const [flash, setFlash] = useState(false)
+  const [celebrate, setCelebrate] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const addExpense = useExpenseStore((s) => s.addExpense)
+  const expenses = useExpenseStore((s) => s.expenses)
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -24,6 +27,8 @@ export function ExpenseInput() {
       return
     }
 
+    const isFirstToday = getExpensesForDay(expenses, new Date()).length === 0
+
     addExpense({
       id: nanoid(),
       amount: result.amount,
@@ -34,6 +39,12 @@ export function ExpenseInput() {
     setValue('')
     setFlash(true)
     setTimeout(() => setFlash(false), 300)
+
+    if (isFirstToday) {
+      setCelebrate(true)
+      setTimeout(() => setCelebrate(false), 700)
+    }
+
     inputRef.current?.focus()
   }
 
@@ -46,6 +57,7 @@ export function ExpenseInput() {
           transition-all duration-150
           ${flash ? 'border-accent bg-accent/10 shadow-[0_0_24px_rgba(242,201,76,0.16)]' : 'border-surface-border bg-surface-raised'}
           ${shake ? 'animate-[shake_0.4s_ease]' : ''}
+          ${celebrate ? 'animate-[celebrate_0.7s_ease]' : ''}
           focus-within:border-accent/60 focus-within:shadow-[0_0_0_1px_rgba(242,201,76,0.3)]
         `}
       >

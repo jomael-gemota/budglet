@@ -54,4 +54,10 @@
     60%       { transform: translateX(-4px); }
     80%       { transform: translateX(4px); }
   }
+
+  @keyframes celebrate {
+    0%   { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.45); transform: scale(1); }
+    40%  { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.12); transform: scale(1.012); }
+    100% { box-shadow: 0 0 0 14px rgba(52, 211, 153, 0); transform: scale(1); }
+  }
 }
