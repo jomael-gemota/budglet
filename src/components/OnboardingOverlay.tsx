@@ -62,6 +62,19 @@ export function OnboardingOverlay() {
               </button>
             </div>
           </div>
+
+          {/* Android download */}
+          <a
+            href="/budglet.apk"
+            download="budglet.apk"
+            className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 16l-5-5h3V4h4v7h3l-5 5Z" fill="currentColor"/>
+              <path d="M5 20h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            Download Android app
+          </a>
         </div>
       </div>
     )
@@ -143,6 +156,19 @@ export function OnboardingOverlay() {
             </button>
           )}
         </div>
+
+        {/* Android download */}
+        <a
+          href="/budglet.apk"
+          download="budglet.apk"
+          className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 16l-5-5h3V4h4v7h3l-5 5Z" fill="currentColor"/>
+            <path d="M5 20h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          Download Android app
+        </a>
       </div>
     </div>
   )

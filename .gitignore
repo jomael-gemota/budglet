@@ -141,3 +141,10 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Android / Capacitor build artifacts
+android/app/build/
+android/.gradle/
+android/build/
+# Keep the compiled APK in public/ tracked so it's deployable
+!public/budglet.apk
