@@ -1,120 +1,86 @@
-/**
- * Generates PWA icons as simple colored square PNGs using raw PNG encoding.
- * No external dependencies required.
- */
-import { createWriteStream } from 'fs'
-import { createDeflate } from 'zlib'
-import { Buffer } from 'buffer'
+import sharp from 'sharp'
+import pngToIco from 'png-to-ico'
+import { mkdirSync, writeFileSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 
-const BG = [0x11, 0x11, 0x11]
-const ACCENT = [0xa3, 0xe6, 0x35]
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const root = join(__dirname, '..')
+const src = join(root, 'public', 'budglet-logo.png')
 
-function crc32(buf) {
-  let crc = 0xffffffff
-  const table = new Uint32Array(256)
-  for (let i = 0; i < 256; i++) {
-    let c = i
-    for (let j = 0; j < 8; j++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
-    table[i] = c
-  }
-  for (const byte of buf) crc = table[(crc ^ byte) & 0xff] ^ (crc >>> 8)
-  return (crc ^ 0xffffffff) >>> 0
-}
+// ── Android mipmap sizes ────────────────────────────────────────────────────
+// Legacy icon  : ic_launcher.png / ic_launcher_round.png
+// Adaptive fg  : ic_launcher_foreground.png (108dp canvas, icon centred at 72dp)
+const DENSITIES = [
+  { folder: 'mipmap-mdpi',    legacy: 48,  adaptive: 108 },
+  { folder: 'mipmap-hdpi',    legacy: 72,  adaptive: 162 },
+  { folder: 'mipmap-xhdpi',   legacy: 96,  adaptive: 216 },
+  { folder: 'mipmap-xxhdpi',  legacy: 144, adaptive: 324 },
+  { folder: 'mipmap-xxxhdpi', legacy: 192, adaptive: 432 },
+]
 
-function chunk(type, data) {
-  const typeBytes = Buffer.from(type, 'ascii')
-  const len = Buffer.alloc(4)
-  len.writeUInt32BE(data.length, 0)
-  const combined = Buffer.concat([typeBytes, data])
-  const crcBuf = Buffer.alloc(4)
-  crcBuf.writeUInt32BE(crc32(combined), 0)
-  return Buffer.concat([len, combined, crcBuf])
-}
+const resDir = join(root, 'android', 'app', 'src', 'main', 'res')
 
-async function generatePNG(size, outputPath) {
-  return new Promise((resolve, reject) => {
-    const ws = createWriteStream(outputPath)
-    const buffers = []
+for (const { folder, legacy, adaptive } of DENSITIES) {
+  const dir = join(resDir, folder)
+  mkdirSync(dir, { recursive: true })
 
-    // PNG signature
-    buffers.push(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  // ic_launcher.png — plain square icon
+  await sharp(src).resize(legacy, legacy).png().toFile(join(dir, 'ic_launcher.png'))
 
-    // IHDR
-    const ihdr = Buffer.alloc(13)
-    ihdr.writeUInt32BE(size, 0)
-    ihdr.writeUInt32BE(size, 4)
-    ihdr[8] = 8   // bit depth
-    ihdr[9] = 2   // color type: RGB
-    ihdr[10] = 0  // compression
-    ihdr[11] = 0  // filter
-    ihdr[12] = 0  // interlace
-    buffers.push(chunk('IHDR', ihdr))
+  // ic_launcher_round.png — circular crop
+  const circle = Buffer.from(
+    `<svg><circle cx="${legacy / 2}" cy="${legacy / 2}" r="${legacy / 2}"/></svg>`
+  )
+  await sharp(src)
+    .resize(legacy, legacy)
+    .composite([{ input: circle, blend: 'dest-in' }])
+    .png()
+    .toFile(join(dir, 'ic_launcher_round.png'))
 
-    // Build raw scanlines: filter byte (0) + RGB pixels
-    const raw = Buffer.alloc((1 + size * 3) * size)
-    const center = size / 2
-    const outerR = size * 0.46
-    const innerR = size * 0.14
-
-    for (let y = 0; y < size; y++) {
-      raw[(1 + size * 3) * y] = 0 // filter none
-      for (let x = 0; x < size; x++) {
-        const dx = x - center
-        const dy = y - center
-        const dist = Math.sqrt(dx * dx + dy * dy)
-
-        // Rounded rect approximation: corner radius ~22% of size
-        const rx = Math.abs(dx) - (outerR - outerR * 0.22)
-        const ry = Math.abs(dy) - (outerR - outerR * 0.22)
-        const cornerDist = rx > 0 && ry > 0 ? Math.sqrt(rx * rx + ry * ry) : Math.max(rx, ry)
-        const inRect = cornerDist <= outerR * 0.22 && Math.abs(dx) <= outerR && Math.abs(dy) <= outerR
-
-        const offset = (1 + size * 3) * y + 1 + x * 3
-
-        if (inRect) {
-          // Inner dot (accent circle)
-          if (dist < innerR) {
-            raw[offset] = ACCENT[0]
-            raw[offset + 1] = ACCENT[1]
-            raw[offset + 2] = ACCENT[2]
-          } else {
-            raw[offset] = BG[0]
-            raw[offset + 1] = BG[1]
-            raw[offset + 2] = BG[2]
-          }
-        } else {
-          raw[offset] = 0x0a
-          raw[offset + 1] = 0x0a
-          raw[offset + 2] = 0x0a
-        }
-      }
-    }
-
-    // Compress with deflate
-    const deflate = createDeflate({ level: 6 })
-    const compressedChunks = []
-    deflate.on('data', (d) => compressedChunks.push(d))
-    deflate.on('end', () => {
-      const compressed = Buffer.concat(compressedChunks)
-      buffers.push(chunk('IDAT', compressed))
-
-      // IEND
-      buffers.push(chunk('IEND', Buffer.alloc(0)))
-
-      const final = Buffer.concat(buffers)
-      ws.write(final)
-      ws.end()
-      ws.on('finish', resolve)
-      ws.on('error', reject)
-    })
-    deflate.on('error', reject)
-    deflate.write(raw)
-    deflate.end()
+  // ic_launcher_foreground.png — logo centred on the 108dp adaptive canvas.
+  // Composite approach: create a transparent canvas, then overlay the resized logo.
+  const iconSize = Math.round(adaptive * (72 / 108))
+  const pad = Math.floor((adaptive - iconSize) / 2)
+  const resizedLogo = await sharp(src).resize(iconSize, iconSize).png().toBuffer()
+  const canvas = await sharp({
+    create: { width: adaptive, height: adaptive, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } }
   })
+    .png()
+    .toBuffer()
+  await sharp(canvas)
+    .composite([{ input: resizedLogo, top: pad, left: pad }])
+    .png()
+    .toFile(join(dir, 'ic_launcher_foreground.png'))
+
+  console.log(`✓ ${folder}`)
 }
 
-await generatePNG(192, 'public/icon-192.png')
-console.log('Generated public/icon-192.png')
+console.log('\nAll Android icons generated.')
 
-await generatePNG(512, 'public/icon-512.png')
-console.log('Generated public/icon-512.png')
+// ── Web favicons ─────────────────────────────────────────────────────────────
+const pub = join(root, 'public')
+
+const webSizes = [
+  { size: 16,  out: 'favicon-16.png' },
+  { size: 32,  out: 'favicon-32.png' },
+  { size: 48,  out: 'favicon-48.png' },
+  { size: 180, out: 'apple-touch-icon.png' },
+  { size: 192, out: 'icon-192.png' },
+  { size: 512, out: 'icon-512.png' },
+]
+
+for (const { size, out } of webSizes) {
+  await sharp(src).resize(size, size).png().toFile(join(pub, out))
+  console.log(`✓ public/${out}`)
+}
+
+const ico = await pngToIco([
+  join(pub, 'favicon-16.png'),
+  join(pub, 'favicon-32.png'),
+  join(pub, 'favicon-48.png'),
+])
+writeFileSync(join(pub, 'favicon.ico'), ico)
+console.log('✓ public/favicon.ico')
+
+console.log('\nAll icons generated.')

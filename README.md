@@ -1,6 +1,10 @@
-# budglet
+<p align="center">
+  <img src="./public/budglet-logo.png" alt="Budglet logo" width="120" />
+</p>
 
-> Brutally simple budgeting. Tells you the truth about your spending.
+<h1 align="center">budglet</h1>
+
+<p align="center"><em>Brutally simple budgeting. Tells you the truth about your spending.</em></p>
 
 ![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white)
