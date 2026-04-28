@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { useExpenseStore } from './store/useExpenseStore'
 import { ExpenseInput } from './components/ExpenseInput'
@@ -9,6 +9,7 @@ import { RealityCheck } from './components/RealityCheck'
 import { SettingsSheet } from './components/SettingsSheet'
 import { HistorySheet } from './components/HistorySheet'
 import { OnboardingOverlay } from './components/OnboardingOverlay'
+import { RankSheet } from './components/RankSheet'
 import {
   getDailyTotal,
   getMonthlyTotal,
@@ -16,6 +17,7 @@ import {
   getExpensesForDay,
   getUnderBudgetStreak,
 } from './utils/calculations'
+import { computeMmr, getTier } from './utils/mmr'
 import { generateDailyInsight, generateRealityCheck, todayKey } from './utils/insights'
 import {
   fetchGptText,
@@ -58,6 +60,10 @@ export default function App() {
     settings.dailyBudget > 0 &&
     dayOfMonth > 1 &&
     monthlyTotal < settings.dailyBudget * dayOfMonth * 0.85
+
+  const { mmr, delta, hasHistory } = computeMmr(expenses, settings.dailyBudget)
+  const currentTier = getTier(mmr)
+  const [rankOpen, setRankOpen] = useState(false)
 
   // ── Daily Insight ───────────────────────────────────────────────────────────
   const insightDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -167,7 +173,18 @@ export default function App() {
           <div className="flex flex-col leading-tight">
             <span className="text-[#f6deb0] font-semibold text-base tracking-tight">budglet</span>
             {settings.name && (
-              <span className="text-zinc-400 text-xs">Hey, {settings.name}</span>
+              <span className="text-zinc-400 text-xs">
+                Hey, {settings.name}
+                {hasHistory && (
+                  <>
+                    {' '}·{' '}
+                    <span className={`font-medium ${currentTier.textColor}`}>
+                      {currentTier.name}
+                    </span>
+                    <span className="text-zinc-600 font-mono"> MMR: {mmr.toLocaleString()}</span>
+                  </>
+                )}
+              </span>
             )}
           </div>
         </div>
@@ -183,6 +200,21 @@ export default function App() {
           <span className="text-zinc-600 text-xs font-mono mr-1">
             {format(today, 'EEE, MMM d')}
           </span>
+          {/* Budget Rank */}
+          <button
+            onClick={() => setRankOpen(true)}
+            className="text-zinc-500 hover:text-accent transition-colors p-1"
+            aria-label="View budget rank"
+            title="Budget Rank"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 8H4l2 8h12l2-8h-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 16l1 4m5-4-1 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              <path d="M8 20h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </button>
+
           {/* History */}
           <button
             onClick={() => setHistoryOpen(true)}
@@ -292,6 +324,15 @@ export default function App() {
 
       {/* History sheet */}
       <HistorySheet />
+
+      {/* Rank sheet */}
+      <RankSheet
+        open={rankOpen}
+        onClose={() => setRankOpen(false)}
+        mmr={mmr}
+        delta={delta}
+        hasHistory={hasHistory}
+      />
 
       {/* First-run onboarding */}
       <OnboardingOverlay />
